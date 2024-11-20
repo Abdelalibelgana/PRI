@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prices Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-image: url('/static/background.png'); /* Image de fond de la page */
+            background-size: cover; /* Couvrir toute la page */
+            background-position: center; /* Centrer l'image */
+            background-attachment: fixed; /* Garder l'image fixe lors du défilement */
+            padding: 50px;
+            color: white; /* Texte en blanc */
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 50px;
+        }
+
+        /* Style pour les cartes avec une image d'arrière-plan spécifique */
+        .choice {
+            background-image: url('/static/background2.png'); /* Image de fond pour la carte */
+            background-size: cover; /* L'image couvre la carte */
+            background-position: center; /* Centrer l'image */
+            background-attachment: scroll; /* L'image défile avec la carte */
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        /* Aligner les icônes et les titres sur la même ligne */
+        .choice img {
+            width: 80px;
+            height: 80px;
+            display: block; /* Assure que les icônes sont en ligne */
+            margin: 0 auto; /* Centre les icônes */
+            opacity: 1; /* S'assurer que l'icône est bien visible */
+        }
+
+        .choice h3 {
+            font-size: 22px;
+            color: #fff;
+            margin-top: 20px;
+        }
+
+        .choice button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #5cb85c;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .choice button:hover {
+            background-color: #4cae4c;
+        }
+
+        .choice:hover {
+            transform: translateY(-10px); /* Légère élévation au survol */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Prices Prediction Using Machine Learning</h1>
+    <p>Choose an action:</p>
+
+    <!-- Container for both choices -->
+    <div class="container">
+        <!-- First choice: Compare Prediction Models -->
+        <div class="choice">
+           <!-- <img src="static/Compare.png" alt="AI Icon"> --> <!-- Icône pour la comparaison --> 
+            <h3>Compare Prediction Models</h3>
+            <form action="/compare" method="POST">
+                <button type="submit">Compare Models</button>
+            </form>
+        </div>
+
+        <!-- Second choice: Choose the Model -->
+        <div class="choice">
+           <!-- <img src="static/Settings.png" alt="Settings Icon">  --><!-- Icône pour choisir le modèle -->
+            <h3>Choose a specific model</h3>
+            <form action="/choose-model" method="POST">
+                <button type="submit">Choose Model</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
