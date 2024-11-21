@@ -14,10 +14,56 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
+@app.route('/view-data', methods=['GET', 'POST'])  # Permet à la route de gérer GET et POST
+def view_results():
+    if request.method == 'POST':
+        # Vérifier si un fichier a été téléchargé
+        file = request.files['file']
+        if file and file.filename.endswith('.csv'):
+            # Lire le fichier CSV dans un DataFrame pandas
+            df = pd.read_csv(file)
+            # Afficher les 5 premières lignes du DataFrame
+            head_data = df.head()
+            # Convertir les données en un format qui peut être utilisé dans HTML
+            columns = df.columns.tolist()
+            rows = head_data.values.tolist()
+            return render_template('data.html', columns=columns, rows=rows)
+        else:
+            return "Invalid file format. Please upload a CSV file."
+
+    # Si c'est une requête GET, afficher simplement le formulaire pour télécharger un fichier
+    return render_template('upload_csv.html')
+
 @app.route('/uploads/<filename>')
 def download_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+@app.route('/process-columns', methods=['POST'])
+def process_columns():
+    # Récupérer les colonnes sélectionnées depuis le formulaire
+    prix_column = request.form['prix']
+    date_column = request.form['date']
+    product_name_column = request.form['product_name']
+    quantity_column = request.form.get('quantity')
+    category_column = request.form.get('category')
+    model_choice = request.form['model']
+
+    # Afficher ou traiter les colonnes et le modèle choisis
+    print(f"Model: {model_choice}")
+    print(f"Columns chosen: {prix_column}, {date_column}, {product_name_column}, {quantity_column}, {category_column}")
+
+    # Selon le modèle choisi, vous pouvez entraîner un modèle spécifique
+    if model_choice == "linear_regression":
+        # Entraîner le modèle de régression linéaire ici
+        pass
+    elif model_choice == "random_forest":
+        # Entraîner le modèle Random Forest ici
+        pass
+
+    # Après l'entraînement, rediriger ou afficher une page de résultats
+    return render_template('confirmation.html', model=model_choice, 
+                           prix=prix_column, date=date_column, 
+                           product_name=product_name_column)
 
 # Route pour afficher la page d'accueil
 @app.route('/')

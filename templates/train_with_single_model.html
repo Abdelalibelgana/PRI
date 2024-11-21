@@ -89,30 +89,62 @@
         .back-button:hover {
             background-color: #0056b3;
         }
+
+        /* Animation du cercle tournant */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3; /* Couleur de fond du cercle */
+            border-top: 8px solid #3498db; /* Couleur de la partie visible du cercle */
+            border-radius: 50%; /* Faire un cercle */
+            width: 50px; /* Taille du cercle */
+            height: 50px;
+            animation: spin 2s linear infinite; /* Appliquer l'animation */
+            margin: 10px auto;
+            display: none; /* Initialement, caché */
+        }
+
+        /* Style du texte d'attente */
+        .loading-text {
+            color: #fff;
+            font-size: 18px;
+            margin-top: 5px;
+            display: none; /* Initialement caché */
+        }
+
+        /* Timer style */
+        #timer {
+            color: #fff;
+            font-size: 18px;
+            margin-top: 5px;
+            display: none; /* Initialement caché */
+        }
+
+        /* Aligner les éléments en ligne */
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
 
     <!-- Bouton Retour -->
-    <button class="back-button" onclick="window.location.href='/'">Retour à l'accueil</button>
-
+    <button class="back-button" onclick="window.location.href='/'">Back to home</button>
+   
     <h1>Train with a Single Model</h1>
     <p>Choose a CSV file and a model to train:</p>
 
     <div class="container">
         <!-- Formulaire pour choisir un fichier CSV -->
-       <!-- <div class="choice">
-            <h3>Choose a CSV file</h3>
-            <form action="/upload" method="POST" enctype="multipart/form-data">
-                <input type="file" name="file" accept=".csv" required>
-                <button type="submit">Import File</button>
-            </form>
-        </div> -->
-
-        <!-- Choisir un modèle -->
         <div class="choice">
             <h3>Choose a CSV file</h3>
-            <form action="/choose-model" method="POST" enctype="multipart/form-data">
+            <form action="/choose-model" method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
                 <input type="file" name="file" accept=".csv" required>
                 <h3>Choose a model from the list</h3>
                 <select name="model" required>
@@ -123,6 +155,43 @@
             </form>
         </div>
     </div>
+
+    <!-- Le cercle tournant, le texte et le timer dans une seule colonne -->
+    <div class="loading-container">
+        <div id="loading" class="loader"></div>
+        <p id="loadingText" class="loading-text">Training in progress... Please wait.</p>
+        <p id="timer"></p>
+    </div>
+
+    <script>
+        // Variable pour garder le temps écoulé
+        let timerInterval;
+
+        // Afficher le loader, le texte et démarrer le timer
+        function showLoader() {
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("loadingText").style.display = "block"; // Afficher le texte
+            document.getElementById("timer").style.display = "block"; // Afficher le timer
+            startTimer(); // Démarrer le timer
+        }
+
+        // Cacher le loader et le texte après la fin du traitement
+        function hideLoader() {
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("loadingText").style.display = "none"; // Cacher le texte
+            document.getElementById("timer").style.display = "none"; // Cacher le timer
+            clearInterval(timerInterval); // Arrêter le timer
+        }
+
+        // Démarrer le timer
+        function startTimer() {
+            let seconds = 0;
+            timerInterval = setInterval(function() {
+                seconds++;
+                document.getElementById("timer").innerText = `Elapsed time: ${seconds} second(s)`;
+            }, 1000); // Mettre à jour chaque seconde
+        }
+    </script>
 
 </body>
 </html>

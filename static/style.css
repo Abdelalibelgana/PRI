@@ -10,3 +10,20 @@ h1 {
 form {
     margin-top: 20px;
 }
+/* Animation du cercle tournant */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .loader {
+    border: 8px solid #f3f3f3; /* Couleur de fond du cercle */
+    border-top: 8px solid #3498db; /* Couleur de la partie visible du cercle */
+    border-radius: 50%; /* Faire un cercle */
+    width: 50px; /* Taille du cercle */
+    height: 50px;
+    animation: spin 2s linear infinite; /* Appliquer l'animation */
+    margin: 100px auto;
+    display: none; /* Initialement, caché */
+  }
+  

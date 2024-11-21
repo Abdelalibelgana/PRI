@@ -8,7 +8,12 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            background-image: url('/static/background.png'); /* Arrière-plan principal */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             padding: 50px;
+            color: white;
         }
 
         h1 {
@@ -17,11 +22,13 @@
         }
 
         .result-container {
-            background-color: #f9f9f9;
+            background: rgba(0, 0, 0, 0.6); /* Fond semi-transparent */
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-top: 50px;
+            max-width: 600px;
+            margin: auto;
         }
 
         .result p {
@@ -36,6 +43,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
 
         .back-button:hover {
@@ -50,10 +58,17 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
 
         .download-button:hover {
             background-color: #218838;
+        }
+
+        /* Arrière-plan spécifique */
+        .back-button, .download-button {
+            width: 200px;
+            margin: 10px auto;
         }
     </style>
 </head>
@@ -75,8 +90,9 @@
         <a href="{{ url_for('static', filename='uploads/' + output_file) }}" class="download-button" download>Download the Results File</a>
     </div>
 
-    <!-- Bouton Retour -->
+    <!-- Boutons de navigation -->
     <button class="back-button" onclick="window.location.href='/'">Back to Home</button>
+    <button class="back-button" onclick="window.history.back()">Back</button>
 
 </body>
 </html>
