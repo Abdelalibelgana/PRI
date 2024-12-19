@@ -152,7 +152,7 @@
     <!-- Formulaire pour sélectionner les colonnes du modèle -->
     <div class="form-container">
         <h2>Choose columns for your model</h2>
-        <form action="/process-columns" method="POST" onsubmit="showLoader()">
+        <form action="/Q-learning" method="POST" onsubmit="showLoader()">
             <input type="hidden" name="uploaded_file_path" value="{{ request.args.get('file_path') }}">
             <label for="prix">Price (Required):</label>
             <select name="prix" required>
@@ -178,8 +178,8 @@
                 {% endfor %}
             </select><br>
 
-            <label for="quantity">Quantity (Optional):</label>
-            <select name="quantity">
+            <label for="quantity">Quantity (Required):</label>
+            <select name="quantity" required>
                 <option value="">Select Quantity Column</option>
                 {% for column in columns %}
                     <option value="{{ column }}">{{ column }}</option>
@@ -193,29 +193,13 @@
                     <option value="{{ column }}">{{ column }}</option>
                 {% endfor %}
             </select><br>
-            <label for="customer_review">Customer Review (Optional):</label>
-            <select name="customer_review">
+            <label for="customer_review">Customer Review (required):</label>
+            <select name="customer_review" required>
                 <option value="">Select Customer Review Column</option>
                 {% for column in columns %}
                     <option value="{{ column }}">{{ column }}</option>
                 {% endfor %}
             </select><br>
-            <label for="competing_price">Competing Price (Optional):</label>
-            <select name="competing_price">
-                <option value="">Select Competing Price Column</option>
-                {% for column in columns %}
-                    <option value="{{ column }}">{{ column }}</option>
-                {% endfor %}
-            </select><br>
-
-            <!-- Choisir le modèle -->
-            <label for="model">Choose Model:</label>
-            <select name="model" required>
-                <option value="">Select Model</option>
-                <option value="linear_regression">Linear Regression</option>
-                <option value="random_forest">Random Forest</option>
-            </select><br>
-
             <button type="submit">Submit Selection</button>
         </form>
     </div>

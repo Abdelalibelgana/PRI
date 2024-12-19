@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Data</title>
+    <title>Model Data for comparaison</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -128,7 +128,7 @@
 </head>
 <body>
 
-    <h1>Data from CSV</h1>
+    <h1>Data from CSV for comparaison</h1>
 
     <table>
         <thead>
@@ -152,7 +152,7 @@
     <!-- Formulaire pour sélectionner les colonnes du modèle -->
     <div class="form-container">
         <h2>Choose columns for your model</h2>
-        <form action="/process-columns" method="POST" onsubmit="showLoader()">
+        <form action="/process-columns-comparaisson" method="POST" onsubmit="showLoader()">
             <input type="hidden" name="uploaded_file_path" value="{{ request.args.get('file_path') }}">
             <label for="prix">Price (Required):</label>
             <select name="prix" required>
@@ -207,15 +207,6 @@
                     <option value="{{ column }}">{{ column }}</option>
                 {% endfor %}
             </select><br>
-
-            <!-- Choisir le modèle -->
-            <label for="model">Choose Model:</label>
-            <select name="model" required>
-                <option value="">Select Model</option>
-                <option value="linear_regression">Linear Regression</option>
-                <option value="random_forest">Random Forest</option>
-            </select><br>
-
             <button type="submit">Submit Selection</button>
         </form>
     </div>

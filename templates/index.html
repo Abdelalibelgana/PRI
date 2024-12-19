@@ -85,31 +85,40 @@
 
     <!-- Container for both choices -->
     <div class="container">
-        <!-- First choice: Compare Prediction Models -->
+        <!-- First choice: Compare Prediction Models 
         <div class="choice">
-           <!-- <img src="static/Compare.png" alt="AI Icon"> --> <!-- Icône pour la comparaison --> 
             <h3>Compare Prediction Models</h3>
             <form action="/compare" method="POST">
                 <button type="submit">Compare Models</button>
             </form>
-        </div>
+        </div>-->
 
-        <!-- Second choice: Choose the Model -->
+        <!-- Second choice: Choose the Model 
         <div class="choice">
-           <!-- <img src="static/Settings.png" alt="Settings Icon">  --><!-- Icône pour choisir le modèle -->
             <h3>Choose a specific model</h3>
             <form action="/choose-model" method="POST">
                 <button type="submit">Choose Model</button>
             </form>
-        </div>
+        </div>-->
         <!-- Third choice: View Model Results (New option) -->
         <div class="choice">
-            <h3>Data visualization</h3>
+            <h3>Choose a specific model</h3>
             <form action="/view-data" method="GET">
-                <button type="submit">View Data</button>
+                <button type="submit">Choose Model</button>
+            </form>
+        </div>
+        <div class="choice">
+            <h3>Compare Prediction Models</h3>
+            <form action="/view-data-Comapraisson" method="GET">
+                <button type="submit">Compare Models</button>
+            </form>
+        </div>
+        <div class="choice">
+            <h3>Reinforcement learning</h3>
+            <form action="/RL" method="POST">
+                <button type="submit"> RL </button>
             </form>
         </div>
     </div>
-
 </body>
 </html>

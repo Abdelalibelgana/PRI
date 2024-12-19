@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Comparison Results</title>
+    <title>Regression Results</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,6 +29,7 @@
         .results-box p {
             font-size: 18px;
         }
+
         .back-button {
             position: absolute;
             top: 20px;
@@ -86,32 +87,31 @@
     </style>
 </head>
 <body>
-
-    <!-- Bouton Retour -->
-    <button class="back-button" onclick="window.location.href='/'">Back to Home</button>
     <button class="back-button" onclick="window.history.back()">Back</button>
+    <h1>Results of {{ model }}</h1>
 
-
-    <h1>Model Comparison Results</h1>
-    
-    <div class="container">
-        <div class="result-box">
-            <h3>Best Model: {{ best_model }}</h3>
-            <p><strong>Mean Squared Error (MSE):</strong> {{ best_mse }}</p>
-            <p><strong>Training Time for Linear Regression:</strong> {{ formatted_training_time1 }} </p> 
-            <p><strong>Training Time for Randum Forest:</strong> {{ formatted_training_time2 }} </p> 
-            <p><strong>Training Time:</strong> {{ formatted_training_time }} </p>    
-            <a href="{{ url_for('static', filename=prediction_file) }}" class="download-button" download>Download the Results File</a>
-
-        </div>
-        <!-- Afficher les 10 premières lignes du fichier -->
-        <div class="result-box">
-            <h3>Top 10 rows from the predicted file:</h3>
-            <div>
-                {{ top_10_rows|safe }}
-            </div>
-        </div> 
+    <div class="results-box">
+        <p><strong>Model chosen:</strong> {{ model }}</p>
+        <p><strong>Price Column:</strong> {{ prix }}</p>
+        <p><strong>Date Column:</strong> {{ date }}</p>
+        <p><strong>Product Name Column:</strong> {{ product_name }}</p>
+        <p><strong>Quantity Column (optional):</strong> {{ quantity }}</p>
+        <p><strong>Category Column (optional):</strong> {{ category }}</p>
+        <p><strong>Customer Review Column (optional):</strong> {{ customer_review }}</p>
+        <p><strong>Competing Price Column (optional):</strong> {{ competing_price }}</p>
     </div>
 
+    <div class="results-box">
+        <p><strong>MSE (Mean Squared Error):</strong> {{ mse }}</p>
+        <p><strong>Training Time:</strong> {{ training_time }}</p>
+        <a href="{{ url_for('static', filename=prediction_file) }}" class="download-button" download>Download the Results File</a>
+    </div>
+
+    <div class="result-box">
+        <h3>Top 10 rows from the predicted file:</h3>
+        <table>
+            {{ top_10_rows|safe }}
+        </table>
+    </div>
 </body>
 </html>

@@ -1,11 +1,19 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask import send_from_directory
+from sklearn.preprocessing import LabelEncoder
 import os
 import pandas as pd
 import time
+import uuid 
+from datetime import timedelta
+
 
 from models.RandomForest import train_random_forest_model
 from models.LinearRegression import train_linear_model
+from models.RandomForest import train_random_forest_Gene
+from models.LinearRegression import train_linear_regression_Gene
+from models.RL_model import train_q_learning
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -14,56 +22,433 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
-@app.route('/view-data', methods=['GET', 'POST'])  # Permet à la route de gérer GET et POST
+@app.route('/view-data', methods=['GET', 'POST'])  
 def view_results():
     if request.method == 'POST':
         # Vérifier si un fichier a été téléchargé
         file = request.files['file']
         if file and file.filename.endswith('.csv'):
-            # Lire le fichier CSV dans un DataFrame pandas
-            df = pd.read_csv(file)
-            # Afficher les 5 premières lignes du DataFrame
-            head_data = df.head()
-            # Convertir les données en un format qui peut être utilisé dans HTML
-            columns = df.columns.tolist()
-            rows = head_data.values.tolist()
-            return render_template('data.html', columns=columns, rows=rows)
+            # Générer un nom de fichier unique pour éviter les conflits
+            unique_filename = str(uuid.uuid4()) + ".csv"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)  # Sauvegarder le fichier sur le serveur
+            print("Path of the uploaded file shows data: ", file_path)
+
+            # Passer le chemin du fichier via l'URL avec un paramètre
+            return redirect(url_for('process_columns', file_path=file_path))  # Passer file_path dans l'URL
+
         else:
             return "Invalid file format. Please upload a CSV file."
 
     # Si c'est une requête GET, afficher simplement le formulaire pour télécharger un fichier
     return render_template('upload_csv.html')
 
-@app.route('/uploads/<filename>')
-def download_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+@app.route('/view-data-Comapraisson', methods=['GET', 'POST'])  
+def view_results_comparaison():
+    if request.method == 'POST':
+        # Vérifier si un fichier a été téléchargé
+        file = request.files['file']
+        if file and file.filename.endswith('.csv'):
+            # Générer un nom de fichier unique pour éviter les conflits
+            unique_filename = str(uuid.uuid4()) + ".csv"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)  # Sauvegarder le fichier sur le serveur
+            print("Path of the uploaded file shows data: ", file_path)
 
-@app.route('/process-columns', methods=['POST'])
+            # Passer le chemin du fichier via l'URL avec un paramètre
+            return redirect(url_for('process_columns_comparaisson', file_path=file_path))  # Passer file_path dans l'URL
+
+        else:
+            return "Invalid file format. Please upload a CSV file."
+
+    # Si c'est une requête GET, afficher simplement le formulaire pour télécharger un fichier
+    return render_template('upload_csv_comparaison.html')
+
+@app.route('/RL', methods=['GET', 'POST'])  
+def view_results_RL():
+    if request.method == 'POST':
+        # Vérifiez si la requête contient un fichier
+        if 'file' not in request.files:
+            # Si aucun fichier n'est présent, afficher une page pour télécharger le fichier
+            return render_template('upload_csv_RL.html')
+        
+        file = request.files['file']
+        if file and file.filename.endswith('.csv'):
+            # Traitement du fichier
+            unique_filename = str(uuid.uuid4()) + ".csv"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)
+            print("Path of the uploaded file shows data: ", file_path)
+
+            # Redirigez vers le traitement
+            return redirect(url_for('process_column_RL', file_path=file_path))
+
+        return "Invalid file format. Please upload a CSV file."
+
+    # Si GET, affichez la page pour télécharger le fichier
+    return render_template('upload_csv_RL.html')
+
+
+
+@app.route('/Q-learning', methods=['GET', 'POST'])
+def process_column_RL():
+# Si la méthode est GET, récupérez le chemin du fichier depuis les paramètres d'URL
+    if request.method == 'GET':
+        uploaded_file_path = request.args.get('file_path')
+        #print("Path of the uploaded file:", uploaded_file_path)
+        
+        if not uploaded_file_path:
+            return "No file found", 400  # Si aucun fichier n'est trouvé, renvoyer une erreur
+
+        try:
+            df = pd.read_csv(uploaded_file_path)
+        except Exception as e:
+            return f"Error reading the CSV file: {e}", 400
+
+        columns = df.columns.tolist()
+        return render_template('data_RL.html', columns=columns, rows=df.head().values.tolist())
+    
+    # Si la méthode est POST, traiter les colonnes et effectuer l'entraînement
+    if request.method == 'POST':
+        #print("Je suis dans le process colonne POST")
+
+        prix_column = request.form['prix']
+        date_column = request.form['date']
+        product_name_column = request.form['product_name']  
+        
+        quantity_column = request.form.get('quantity')  # optionnel, 
+        category_column = request.form.get('category')  # optionnel
+        customer_review_column = request.form.get('customer_review')  # optionnel
+        #competing_price_column = request.form.get('competing_price')  # optionnel
+        #model_choice = request.form['model']
+
+        uploaded_file_path = request.form.get('uploaded_file_path')
+        #print("Path of the uploaded file:", uploaded_file_path)
+        if not uploaded_file_path:
+            return "No file found", 400  # Si aucun fichier n'est trouvé, renvoyer une erreur
+
+        try:
+            df = pd.read_csv(uploaded_file_path)
+        except Exception as e:
+            return f"Error reading the CSV file: {e}", 400
+        
+        # Vérifier que les colonnes obligatoires sont présentes dans le DataFrame
+        quantity_column = request.form.get('quantity')  # optionnel, 
+        required_columns = [prix_column, date_column, product_name_column,quantity_column,customer_review_column ]
+        for col in required_columns:
+            if col not in df.columns:
+                return f"Missing required column: {col}", 400  # Retourner une erreur si une colonne est manquante
+
+        # Supprimer les lignes contenant des valeurs manquantes dans les colonnes critiques
+        df_cleaned = df.dropna(subset=[prix_column, date_column, product_name_column, quantity_column,customer_review_column])  # Supprimer les lignes avec des NaN dans les colonnes critiques
+
+        # Créer X avec les colonnes spécifiées
+        X = pd.DataFrame()
+
+        # Affecter les colonnes obligatoires à X
+        X['Date'] = pd.to_datetime(df_cleaned[date_column], errors='coerce')  # Convertir la date en ordinal
+        X['Price'] = df_cleaned[prix_column]
+        X['Product'] = df_cleaned[product_name_column].astype(str)  # Assurez-vous que product_name est une chaîne
+
+        # Ajouter les colonnes optionnelles si elles existent, sinon ajouter NaN
+        X['Quantity'] = df_cleaned[quantity_column] #if quantity_column in df_cleaned.columns else None
+        X['Category'] = df_cleaned[category_column] if category_column in df_cleaned.columns else None
+        #if customer_review_column in df_cleaned.columns:
+            # Convertir la colonne en float et gérer les erreurs en les forçant à NaN
+           # X['Customer_Review'] = pd.to_numeric(df_cleaned[customer_review_column], errors='coerce')
+        X['Customer_Review'] = df_cleaned[customer_review_column]
+        #else:
+            # Si la colonne n'existe pas, on remplace par NaN
+         #   X['Customer_Review'] = None
+        #X['Competing_Price'] = df_cleaned[competing_price_column] if competing_price_column in df_cleaned.columns else None
+        #print ("pppppc")
+        #print(X.head(3))
+        # Définir Y avant le nettoyage
+        Y = df_cleaned[prix_column]
+        
+       
+        predictions, y_test,training_time = train_q_learning(X, Y)
+        #prediction_file = 'predicted_prices_Linear.csv'
+         
+
+        # Formater le temps d'entraînement en hh:mm:ss
+        formatted_training_time = str(timedelta(seconds=int(training_time)))
+        #prediction_file_path = os.path.join('static', prediction_file)
+        #predicted_df = pd.read_csv(prediction_file_path)
+        top_10_rows = predictions.head(10).to_html(classes="table table-striped", index=False)
+        # Après l'entraînement, rediriger ou afficher une page de résultats
+        return render_template('view_data_RL.html', 
+                            prix=prix_column, date=date_column, 
+                            product_name=product_name_column,
+                            quantity=quantity_column, category=category_column,
+                            customer_review=customer_review_column, 
+                            training_time= formatted_training_time,
+                            #prediction_file =prediction_file, 
+                            top_10_rows = top_10_rows)
+    
+    uploaded_file_path = request.args.get('file_path')
+    #print("Path of the uploaded file:", uploaded_file_path)
+
+    if not uploaded_file_path:
+        return "No file found", 400  # Si aucun fichier n'est trouvé, renvoyer une erreur
+
+    try:
+        df = pd.read_csv(uploaded_file_path)
+    except Exception as e:
+        return f"Error reading the CSV file: {e}", 400
+
+    columns = df.columns.tolist()
+
+    return render_template('data_RL.html', columns=columns, rows=df.head().values.tolist())
+    
+#@app.route('/uploads/<filename>')
+#def download_file(filename):
+#    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+#ABDE
+@app.route('/process-columns', methods=['GET', 'POST'])
 def process_columns():
-    # Récupérer les colonnes sélectionnées depuis le formulaire
-    prix_column = request.form['prix']
-    date_column = request.form['date']
-    product_name_column = request.form['product_name']
-    quantity_column = request.form.get('quantity')
-    category_column = request.form.get('category')
-    model_choice = request.form['model']
+    # Si la méthode est GET, récupérez le chemin du fichier depuis les paramètres d'URL
+    if request.method == 'GET':
+        uploaded_file_path = request.args.get('file_path')
+        #print("Path of the uploaded file:", uploaded_file_path)
+        
+        if not uploaded_file_path:
+            return "No file found", 400  # Si aucun fichier n'est trouvé, renvoyer une erreur
 
-    # Afficher ou traiter les colonnes et le modèle choisis
-    print(f"Model: {model_choice}")
-    print(f"Columns chosen: {prix_column}, {date_column}, {product_name_column}, {quantity_column}, {category_column}")
+        try:
+            df = pd.read_csv(uploaded_file_path)
+        except Exception as e:
+            return f"Error reading the CSV file: {e}", 400
 
-    # Selon le modèle choisi, vous pouvez entraîner un modèle spécifique
-    if model_choice == "linear_regression":
-        # Entraîner le modèle de régression linéaire ici
-        pass
-    elif model_choice == "random_forest":
-        # Entraîner le modèle Random Forest ici
-        pass
+        columns = df.columns.tolist()
+        return render_template('data.html', columns=columns, rows=df.head().values.tolist())
+    
+    # Si la méthode est POST, traiter les colonnes et effectuer l'entraînement
+    if request.method == 'POST':
+        #print("Je suis dans le process colonne POST")
 
-    # Après l'entraînement, rediriger ou afficher une page de résultats
-    return render_template('confirmation.html', model=model_choice, 
-                           prix=prix_column, date=date_column, 
-                           product_name=product_name_column)
+        prix_column = request.form['prix']
+        date_column = request.form['date']
+        product_name_column = request.form['product_name']  # Prendre le produit sélectionné
+        #print(f"Product name column selected: {product_name_column}")
+        quantity_column = request.form.get('quantity')  # optionnel, 
+        category_column = request.form.get('category')  # optionnel
+        customer_review_column = request.form.get('customer_review')  # optionnel
+        competing_price_column = request.form.get('competing_price')  # optionnel
+        model_choice = request.form['model']
+
+        uploaded_file_path = request.form.get('uploaded_file_path')
+        #print("Path of the uploaded file:", uploaded_file_path)
+        if not uploaded_file_path:
+            return "No file found", 400  # Si aucun fichier n'est trouvé, renvoyer une erreur
+
+        try:
+            df = pd.read_csv(uploaded_file_path)
+        except Exception as e:
+            return f"Error reading the CSV file: {e}", 400
+        
+        # Vérifier que les colonnes obligatoires sont présentes dans le DataFrame
+        required_columns = [prix_column, date_column, product_name_column]
+        for col in required_columns:
+            if col not in df.columns:
+                return f"Missing required column: {col}", 400  # Retourner une erreur si une colonne est manquante
+
+        # Supprimer les lignes contenant des valeurs manquantes dans les colonnes critiques
+        df_cleaned = df.dropna(subset=[prix_column, date_column, product_name_column])  # Supprimer les lignes avec des NaN dans les colonnes critiques
+
+        # Créer X avec les colonnes spécifiées
+        X = pd.DataFrame()
+
+        # Affecter les colonnes obligatoires à X
+        X['Date'] = pd.to_datetime(df_cleaned[date_column], errors='coerce')  # Convertir la date en ordinal
+        X['Price'] = df_cleaned[prix_column]
+        X['Product'] = df_cleaned[product_name_column].astype(str)  # Assurez-vous que product_name est une chaîne
+
+        # Ajouter les colonnes optionnelles si elles existent, sinon ajouter NaN
+        X['Quantity'] = df_cleaned[quantity_column] if quantity_column in df_cleaned.columns else None
+        X['Category'] = df_cleaned[category_column] if category_column in df_cleaned.columns else None
+        if customer_review_column in df_cleaned.columns:
+            # Convertir la colonne en float et gérer les erreurs en les forçant à NaN
+           # X['Customer_Review'] = pd.to_numeric(df_cleaned[customer_review_column], errors='coerce')
+           X['Customer_Review'] = df_cleaned[customer_review_column]
+        else:
+            # Si la colonne n'existe pas, on remplace par NaN
+            X['Customer_Review'] = None
+        X['Competing_Price'] = df_cleaned[competing_price_column] if competing_price_column in df_cleaned.columns else None
+        #print ("pppppc")
+        #print(X.head(3))
+        # Définir Y avant le nettoyage
+        Y = df_cleaned[prix_column]
+
+        # Entraîner le modèle en fonction du choix
+        if model_choice == "linear_regression":
+            model, predictions, mse, y_test,training_time = train_linear_regression_Gene(X, Y)
+            prediction_file = 'predicted_prices_Linear.csv'
+            model_CH = "Linear Regression"
+        elif model_choice == "random_forest":
+            model, predictions,mse, y_test,training_time = train_random_forest_Gene(X, Y)
+            prediction_file = 'predicted_prices_Forest.csv'
+            model_CH = "Random Forest"
+        # Créer une liste de tuples (actual, predicted)
+        #actual_predicted = list(zip(y_test, predictions))
+        # Formater le temps d'entraînement en hh:mm:ss
+        formatted_training_time = str(timedelta(seconds=int(training_time)))
+        prediction_file_path = os.path.join('static', prediction_file)
+        predicted_df = pd.read_csv(prediction_file_path)
+        top_10_rows = predicted_df.head(10).to_html(classes="table table-striped", index=False)
+        # Après l'entraînement, rediriger ou afficher une page de résultats
+        return render_template('view_data_result.html', model=model_CH, 
+                            prix=prix_column, date=date_column, 
+                            product_name=product_name_column,
+                            quantity=quantity_column, category=category_column,
+                            customer_review=customer_review_column, 
+                            competing_price=competing_price_column, mse=mse, 
+                           # actual_predicted=actual_predicted,
+                            training_time= formatted_training_time,
+                            prediction_file =prediction_file, 
+                            top_10_rows = top_10_rows)
+    
+    uploaded_file_path = request.args.get('file_path')
+    #print("Path of the uploaded file:", uploaded_file_path)
+
+    if not uploaded_file_path:
+        return "No file found", 400  # Si aucun fichier n'est trouvé, renvoyer une erreur
+
+    try:
+        df = pd.read_csv(uploaded_file_path)
+    except Exception as e:
+        return f"Error reading the CSV file: {e}", 400
+
+    columns = df.columns.tolist()
+
+    return render_template('data.html', columns=columns, rows=df.head().values.tolist())
+
+@app.route('/download_file/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['STATIC_FOLDER'], filename)
+@app.route('/process-columns-comparaisson', methods=['GET', 'POST'])
+def process_columns_comparaisson():
+    # Si la méthode est GET, récupérez le chemin du fichier depuis les paramètres d'URL
+    if request.method == 'GET':
+        uploaded_file_path = request.args.get('file_path')
+        #print("Path of the uploaded file:", uploaded_file_path)
+        
+        if not uploaded_file_path:
+            return "No file found", 400  # Si aucun fichier n'est trouvé, renvoyer une erreur
+
+        try:
+            df = pd.read_csv(uploaded_file_path)
+        except Exception as e:
+            return f"Error reading the CSV file: {e}", 400
+
+        columns = df.columns.tolist()
+        return render_template('data_comparaison.html', columns=columns, rows=df.head().values.tolist())
+    
+    # Si la méthode est POST, traiter les colonnes et effectuer l'entraînement
+    if request.method == 'POST':
+        #print("Je suis dans le process colonne POST")
+
+        prix_column = request.form['prix']
+        date_column = request.form['date']
+        product_name_column = request.form['product_name']  # Prendre le produit sélectionné
+        #print(f"Product name column selected: {product_name_column}")
+        quantity_column = request.form.get('quantity')  # optionnel, 
+        category_column = request.form.get('category')  # optionnel
+        customer_review_column = request.form.get('customer_review')  # optionnel
+        competing_price_column = request.form.get('competing_price')  # optionnel
+        #model_choice = request.form['model']
+
+        uploaded_file_path = request.form.get('uploaded_file_path')
+        #print("Path of the uploaded file:", uploaded_file_path)
+        if not uploaded_file_path:
+            return "No file found", 400  # Si aucun fichier n'est trouvé, renvoyer une erreur
+
+        try:
+            df = pd.read_csv(uploaded_file_path)
+        except Exception as e:
+            return f"Error reading the CSV file: {e}", 400
+        
+        # Vérifier que les colonnes obligatoires sont présentes dans le DataFrame
+        required_columns = [prix_column, date_column, product_name_column]
+        for col in required_columns:
+            if col not in df.columns:
+                return f"Missing required column: {col}", 400  # Retourner une erreur si une colonne est manquante
+
+        # Supprimer les lignes contenant des valeurs manquantes dans les colonnes critiques
+        df_cleaned = df.dropna(subset=[prix_column, date_column, product_name_column])  # Supprimer les lignes avec des NaN dans les colonnes critiques
+
+        # Créer X avec les colonnes spécifiées
+        X = pd.DataFrame()
+
+        # Affecter les colonnes obligatoires à X
+        X['Date'] = pd.to_datetime(df_cleaned[date_column], errors='coerce')  # Convertir la date en ordinal
+        X['Price'] = df_cleaned[prix_column]
+        X['Product'] = df_cleaned[product_name_column].astype(str)  # Assurez-vous que product_name est une chaîne
+
+        # Ajouter les colonnes optionnelles si elles existent, sinon ajouter NaN
+        X['Quantity'] = df_cleaned[quantity_column] if quantity_column in df_cleaned.columns else None
+        X['Category'] = df_cleaned[category_column] if category_column in df_cleaned.columns else None
+        if customer_review_column in df_cleaned.columns:
+            # Convertir la colonne en float et gérer les erreurs en les forçant à NaN
+           # X['Customer_Review'] = pd.to_numeric(df_cleaned[customer_review_column], errors='coerce')
+           X['Customer_Review'] = df_cleaned[customer_review_column]
+        else:
+            # Si la colonne n'existe pas, on remplace par NaN
+            X['Customer_Review'] = None
+        X['Competing_Price'] = df_cleaned[competing_price_column] if competing_price_column in df_cleaned.columns else None
+        #print ("pppppc")
+        #print(X.head(3))
+        # Définir Y avant le nettoyage
+        Y = df_cleaned[prix_column]
+
+        
+        model1, predictions1, mse1, y_test1,training_time1 = train_linear_regression_Gene(X, Y)
+        
+        model2, predictions,mse2, y_test2,training_time2 = train_random_forest_Gene(X, Y)
+        training_time = training_time1 + training_time2
+        # Comparer les MSE
+        if mse1 < mse2:
+          best_model = "Linear Regression"
+          best_mse = mse1
+          prediction_file = 'predicted_prices_Linear.csv'
+          
+        else:
+            best_model = "Random Forest"
+            best_mse = mse2
+            prediction_file = 'predicted_prices_Forest.csv'
+
+        formatted_training_time = str(timedelta(seconds=int(training_time)))
+        formatted_training_time1 = str(timedelta(seconds=int(training_time1)))
+        formatted_training_time2 = str(timedelta(seconds=int(training_time2)))
+        prediction_file_path = os.path.join('static', prediction_file)
+        predicted_df = pd.read_csv(prediction_file_path)
+        top_10_rows = predicted_df.head(10).to_html(classes="table table-striped", index=False)
+        return render_template('compare_results.html', 
+                                   best_model=best_model, 
+                                   formatted_training_time1 = formatted_training_time1,
+                                   formatted_training_time2 = formatted_training_time2,
+                                   formatted_training_time = formatted_training_time,
+                                   best_mse=best_mse , 
+                                   prediction_file=prediction_file, 
+                                   top_10_rows=top_10_rows)    
+
+    
+    uploaded_file_path = request.args.get('file_path')
+    #print("Path of the uploaded file:", uploaded_file_path)
+
+    if not uploaded_file_path:
+        return "No file found", 400  # Si aucun fichier n'est trouvé, renvoyer une erreur
+
+    try:
+        df = pd.read_csv(uploaded_file_path)
+    except Exception as e:
+        return f"Error reading the CSV file: {e}", 400
+
+    columns = df.columns.tolist()
+
+    return render_template('data.html', columns=columns, rows=df.head().values.tolist())
+
+
 
 # Route pour afficher la page d'accueil
 @app.route('/')
