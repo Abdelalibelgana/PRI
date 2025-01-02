@@ -35,20 +35,22 @@ def train_linear_regression_Gene(X, Y):
     for product_code, product_data in X.groupby("Product"):  # Utilisation de 'product_name_column' comme identifiant
         product_data = product_data.sort_values("Date")  # Trier les données par date (colonne 'Order Date')
 
-        # je rajoute les trois colonnes esentiel 
-        X_prod = product_data[['Date', 'Price', 'Product']]
-       
-        # Vérification si la colonne 'Quantity' existe et ajout à X_prod si elle est présente
-        if 'Quantity' in product_data.columns and product_data['Quantity'].notna().any():
-            X_prod['Quantity'] = product_data['Quantity']
+        # Ajoutez cette ligne pour travailler sur une copie explicite :
+        X_prod = product_data[['Date', 'Price', 'Product']].copy()
 
-        # Vérification si la colonne 'Category' existe et ajout à X_prod si elle est présente
+        # Vérification et ajout des colonnes si elles existent
+        if 'Quantity' in product_data.columns and product_data['Quantity'].notna().any():
+            X_prod.loc[:, 'Quantity'] = product_data['Quantity']
+
         if 'Category' in product_data.columns and product_data['Category'].notna().any():
-            X_prod['Category'] = product_data['Category']
+            X_prod.loc[:, 'Category'] = product_data['Category']
+
         if 'Customer_Review' in product_data.columns and product_data['Customer_Review'].notna().any():
-            X_prod['Customer_Review'] = product_data['Competing_Price']
+            X_prod.loc[:, 'Customer_Review'] = product_data['Customer_Review']
+
         if 'Competing_Price' in product_data.columns and product_data['Competing_Price'].notna().any():
-            X_prod['Competing_Price'] = product_data['Competing_Price']
+            X_prod.loc[:, 'Competing_Price'] = product_data['Competing_Price']
+
         
         y_prod = Y[product_data.index]
         n_occurrences = len(product_data)

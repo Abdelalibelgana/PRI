@@ -214,6 +214,8 @@
                 <option value="">Select Model</option>
                 <option value="linear_regression">Linear Regression</option>
                 <option value="random_forest">Random Forest</option>
+                <option value="LR_QL">Linear Regression + Q_Learning</option>
+                <option value="RF_QL">Random Forest + Q_Learning</option>
             </select><br>
 
             <button type="submit">Submit Selection</button>
@@ -230,35 +232,44 @@
     <!-- Boutons Retour -->
     <button class="back-button" onclick="window.location.href='/'">Back to Home</button>
     <button class="back-button" onclick="window.history.back()">Back</button>
+    
 
     <script>
-        // Variable pour garder le temps écoulé
-        let timerInterval;
-
-        // Afficher le loader, le texte et démarrer le timer
+        
+        // Montrer le loader lorsque le formulaire est soumis
         function showLoader() {
             document.getElementById("loading").style.display = "block";
-            document.getElementById("loadingText").style.display = "block"; // Afficher le texte
-            document.getElementById("timer").style.display = "block"; // Afficher le timer
-            startTimer(); // Démarrer le timer
+            document.getElementById("loadingText").style.display = "block";
+            document.getElementById("timer").style.display = "block";
+            startTimer();
+            localStorage.setItem("isProcessing", "true"); // Marque le traitement en cours
         }
-
-        // Cacher le loader et le texte après la fin du traitement
+    
+        // Cacher le loader après le traitement
         function hideLoader() {
             document.getElementById("loading").style.display = "none";
-            document.getElementById("loadingText").style.display = "none"; // Cacher le texte
-            document.getElementById("timer").style.display = "none"; // Cacher le timer
-            clearInterval(timerInterval); // Arrêter le timer
+            document.getElementById("loadingText").style.display = "none";
+            document.getElementById("timer").style.display = "none";
+            clearInterval(timerInterval); // Arrête le timer
+            localStorage.removeItem("isProcessing"); // Efface l'indicateur de traitement
         }
-
-        // Démarrer le timer
+    
+        // Timer pour le compteur
+        let timerInterval;
         function startTimer() {
             let seconds = 0;
-            timerInterval = setInterval(function() {
+            timerInterval = setInterval(function () {
                 seconds++;
                 document.getElementById("timer").innerText = `Elapsed time: ${seconds} second(s)`;
             }, 1000); // Mettre à jour chaque seconde
         }
+    
+        // Lorsque l'utilisateur revient sur cette page, vérifier si le traitement est terminé
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                hideLoader(); // Cache le loader pour éviter qu'il ne s'affiche à nouveau
+            }
+        };
     </script>
 
 </body>

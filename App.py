@@ -10,6 +10,8 @@ from datetime import timedelta
 from models.RandomForest import train_random_forest_Gene
 from models.LinearRegression import train_linear_regression_Gene
 from models.RL_model import train_q_learning
+from models.LR_QL import regression_linear_q_learning
+from models.RF_QL import random_forest_q_learning   
 from datetime import datetime
 
 app = Flask(__name__)
@@ -117,6 +119,7 @@ def process_column_RL():
         category_column = request.form.get('category')  # optionnel
         customer_review_column = request.form.get('customer_review')  # optionnel
         #competing_price_column = request.form.get('competing_price')  # optionnel
+        
         #model_choice = request.form['model']
 
         uploaded_file_path = request.form.get('uploaded_file_path')
@@ -286,9 +289,20 @@ def process_columns():
             model, predictions,mse, y_test,training_time = train_random_forest_Gene(X, Y)
             prediction_file = 'predicted_prices_Forest.csv'
             model_CH = "Random Forest"
+        elif model_choice == "LR_QL": 
+            output_df, table, mse, training_time = regression_linear_q_learning(X,Y)
+            prediction_file = 'LR_QL.csv'
+            model_CH = "Linear Regression + Q_Learning"
+        elif model_choice == "RF_QL": 
+            output_df, table, mse, training_time = random_forest_q_learning(X,Y)
+            prediction_file = 'RF_QL.csv'
+            model_CH = "Random Forest + Q_Learning"
+
+
         # Créer une liste de tuples (actual, predicted)
         #actual_predicted = list(zip(y_test, predictions))
         # Formater le temps d'entraînement en hh:mm:ss
+        print (training_time)
         formatted_training_time = str(timedelta(seconds=int(training_time)))
         prediction_file_path = os.path.join('static', prediction_file)
         predicted_df = pd.read_csv(prediction_file_path)
@@ -353,7 +367,8 @@ def process_columns_comparaisson():
         category_column = request.form.get('category')  # optionnel
         customer_review_column = request.form.get('customer_review')  # optionnel
         competing_price_column = request.form.get('competing_price')  # optionnel
-        #model_choice = request.form['model']
+        with_reinforcement_learning = request.form.get('with_reinforcement_learning')
+        
 
         uploaded_file_path = request.form.get('uploaded_file_path')
         #print("Path of the uploaded file:", uploaded_file_path)
@@ -398,22 +413,35 @@ def process_columns_comparaisson():
         # Définir Y avant le nettoyage
         Y = df_cleaned[prix_column]
 
-        
-        model1, predictions1, mse1, y_test1,training_time1 = train_linear_regression_Gene(X, Y)
-        
-        model2, predictions,mse2, y_test2,training_time2 = train_random_forest_Gene(X, Y)
-        training_time = training_time1 + training_time2
-        # Comparer les MSE
-        if mse1 < mse2:
-          best_model = "Linear Regression"
-          best_mse = mse1
-          prediction_file = 'predicted_prices_Linear.csv'
-          
+        if with_reinforcement_learning == 'yes':
+            print("Reinforcement Learning is enabled.")
+            output_df, table, mse1, training_time1 = regression_linear_q_learning(X,Y)
+            output_df2, table2, mse2, training_time2 = random_forest_q_learning(X,Y)
+            if mse1 < mse2:
+                best_model = "Linear Regression + Q_Learning "
+                best_mse = mse1
+                prediction_file = 'LR_QL.csv'
+            
+            else:
+                best_model = "Random Forest + Q_Learning"
+                best_mse = mse2
+                prediction_file = 'RF_QL.csv'
         else:
-            best_model = "Random Forest"
-            best_mse = mse2
-            prediction_file = 'predicted_prices_Forest.csv'
-
+            print("Reinforcement Learning is disabled.")
+            model1, predictions1, mse1, y_test1,training_time1 = train_linear_regression_Gene(X, Y)
+            
+            model2, predictions,mse2, y_test2,training_time2 = train_random_forest_Gene(X, Y)
+            # Comparer les MSE
+            if mse1 < mse2:
+                best_model = "Linear Regression"
+                best_mse = mse1
+                prediction_file = 'predicted_prices_Linear.csv'
+            
+            else:
+                best_model = "Random Forest"
+                best_mse = mse2
+                prediction_file = 'predicted_prices_Forest.csv'
+        training_time = training_time1 + training_time2
         formatted_training_time = str(timedelta(seconds=int(training_time)))
         formatted_training_time1 = str(timedelta(seconds=int(training_time1)))
         formatted_training_time2 = str(timedelta(seconds=int(training_time2)))

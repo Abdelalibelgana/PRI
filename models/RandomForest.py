@@ -23,21 +23,20 @@ def train_random_forest_Gene(X, Y):
         # Trier les données par date pour garantir l'ordre chronologique
         product_data = product_data.sort_values('Date')
 
-        # Extraire X et y pour ce produit
         X_prod = product_data[['Date', 'Price', 'Product']].copy()
 
-        # Vérification et ajout des colonnes supplémentaires si elles sont présentes
         if 'Quantity' in product_data.columns and product_data['Quantity'].notna().any():
             X_prod.loc[:, 'Quantity'] = product_data['Quantity']
-        
+
         if 'Category' in product_data.columns and product_data['Category'].notna().any():
             X_prod.loc[:, 'Category'] = product_data['Category']
-        
+
         if 'Customer_Review' in product_data.columns and product_data['Customer_Review'].notna().any():
             X_prod.loc[:, 'Customer_Review'] = product_data['Customer_Review']
-        
+
         if 'Competing_Price' in product_data.columns and product_data['Competing_Price'].notna().any():
             X_prod.loc[:, 'Competing_Price'] = product_data['Competing_Price']
+
 
         # Convertir 'Date' en format numérique
         X_prod.loc[:, 'Date'] = pd.to_datetime(X_prod['Date'], errors='coerce')
