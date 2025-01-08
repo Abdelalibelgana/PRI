@@ -207,15 +207,15 @@
                     <option value="{{ column }}">{{ column }}</option>
                 {% endfor %}
             </select><br>
-            <label for="with_reinforcement_learning">With Reinforcement Learning (Optional):</label>
+            <label for="with_reinforcement_learning">With Reinforcement Learning:</label>
             <input type="checkbox" name="with_reinforcement_learning" id="with_reinforcement_learning" value="yes"><br>
 
             <button type="submit">Submit Selection</button>
         </form>
     </div>
 
-    <!-- Le cercle tournant, le texte et le timer dans une seule colonne -->
-    <div class="loading-container">
+   <!-- Le cercle tournant, le texte et le timer dans une seule colonne -->
+   <div class="loading-container">
         <div id="loading" class="loader"></div>
         <p id="loadingText" class="loading-text">Training in progress... Please wait.</p>
         <p id="timer"></p>
@@ -226,16 +226,44 @@
     <button class="back-button" onclick="window.history.back()">Back</button>
 
     <script>
-        // Réinitialiser l'état au chargement de la page
-        window.onload = function() {
-            const isProcessing = localStorage.getItem("isProcessing");
-            if (isProcessing === "true") {
-                showLoader(); // Montre le loader si on traite actuellement
-            } else {
-                hideLoader(); // Cache le loader si le traitement est terminé
-            }
-        };
+        document.addEventListener("DOMContentLoaded", function() {
+            const checkbox = document.getElementById("with_reinforcement_learning");
+            const quantity = document.querySelector("select[name='quantity']");
+            const category = document.querySelector("select[name='category']");
+            const customerReview = document.querySelector("select[name='customer_review']");
     
+            const quantityLabel = document.querySelector("label[for='quantity']");
+            const categoryLabel = document.querySelector("label[for='category']");
+            const customerReviewLabel = document.querySelector("label[for='customer_review']");
+    
+            checkbox.addEventListener("change", function() {
+                if (checkbox.checked) {
+                    // Set required attributes
+                    quantity.setAttribute("required", "true");
+                    category.setAttribute("required", "true");
+                    customerReview.setAttribute("required", "true");
+    
+                    // Update labels to show "Required"
+                    quantityLabel.textContent = "Quantity (Required):";
+                    categoryLabel.textContent = "Category (Required):";
+                    customerReviewLabel.textContent = "Customer Review (Required):";
+                } else {
+                    // Remove required attributes
+                    quantity.removeAttribute("required");
+                    category.removeAttribute("required");
+                    customerReview.removeAttribute("required");
+    
+                    // Update labels to show "Optional"
+                    quantityLabel.textContent = "Quantity (Optional):";
+                    categoryLabel.textContent = "Category (Optional):";
+                    customerReviewLabel.textContent = "Customer Review (Optional):";
+                }
+            });
+        });
+    </script>
+    
+    <script>
+        
         // Montrer le loader lorsque le formulaire est soumis
         function showLoader() {
             document.getElementById("loading").style.display = "block";
@@ -244,7 +272,7 @@
             startTimer();
             localStorage.setItem("isProcessing", "true"); // Marque le traitement en cours
         }
-    
+
         // Cacher le loader après le traitement
         function hideLoader() {
             document.getElementById("loading").style.display = "none";
@@ -253,7 +281,7 @@
             clearInterval(timerInterval); // Arrête le timer
             localStorage.removeItem("isProcessing"); // Efface l'indicateur de traitement
         }
-    
+
         // Timer pour le compteur
         let timerInterval;
         function startTimer() {
@@ -263,7 +291,7 @@
                 document.getElementById("timer").innerText = `Elapsed time: ${seconds} second(s)`;
             }, 1000); // Mettre à jour chaque seconde
         }
-    
+
         // Lorsque l'utilisateur revient sur cette page, vérifier si le traitement est terminé
         window.onpageshow = function(event) {
             if (event.persisted) {
@@ -271,6 +299,7 @@
             }
         };
     </script>
+
     
 
 </body>

@@ -12,6 +12,7 @@ from models.LinearRegression import train_linear_regression_Gene
 from models.RL_model import train_q_learning
 from models.LR_QL import regression_linear_q_learning
 from models.RF_QL import random_forest_q_learning   
+from models.MLP import mlp_model_q_learning
 from datetime import datetime
 
 app = Flask(__name__)
@@ -285,18 +286,43 @@ def process_columns():
             model, predictions, mse, y_test,training_time = train_linear_regression_Gene(X, Y)
             prediction_file = 'predicted_prices_Linear.csv'
             model_CH = "Linear Regression"
+            visualize_predictions = "prix_comparaison_LR.png"
+            scatter_predictions_with_ideal = "scatter_comparaison_ideal_LR.png"
+            plot_error_distribution = "histogram_erreurs_LR.png"
+            visualize_limited_predictions =  "limite_comparaison_LR.png"
         elif model_choice == "random_forest":
             model, predictions,mse, y_test,training_time = train_random_forest_Gene(X, Y)
             prediction_file = 'predicted_prices_Forest.csv'
             model_CH = "Random Forest"
+            visualize_predictions = "prix_comparaison_RF.png"
+            scatter_predictions_with_ideal = "scatter_comparaison_ideal_RF.png"
+            plot_error_distribution = "histogram_erreurs_RF.png"
+            visualize_limited_predictions =  "limite_comparaison_RF.png"
         elif model_choice == "LR_QL": 
             output_df, table, mse, training_time = regression_linear_q_learning(X,Y)
             prediction_file = 'LR_QL.csv'
             model_CH = "Linear Regression + Q_Learning"
+            visualize_predictions = "prix_comparaison_LR_QL.png"
+            scatter_predictions_with_ideal = "scatter_comparaison_ideal_LR_QL.png"
+            plot_error_distribution = "histogram_erreurs_LR_QL.png"
+            visualize_limited_predictions =  "limite_comparaison_LR_QL.png"
         elif model_choice == "RF_QL": 
             output_df, table, mse, training_time = random_forest_q_learning(X,Y)
             prediction_file = 'RF_QL.csv'
             model_CH = "Random Forest + Q_Learning"
+            visualize_predictions = "prix_comparaison_RF_QL.png"
+            scatter_predictions_with_ideal = "scatter_comparaison_ideal_RF_QL.png"
+            plot_error_distribution = "histogram_erreurs_RF_QL.png"
+            visualize_limited_predictions =  "limite_comparaison_RF_QL.png"
+        elif model_choice == "MLP": 
+            output_df, table, mse, training_time = mlp_model_q_learning(X,Y)
+            prediction_file = 'MLP.csv'
+            model_CH = "MLP"
+            visualize_predictions = "training_loss_mlp.png"
+            scatter_predictions_with_ideal = "scatter_train_mlp.png"
+            plot_error_distribution = "scatter_validation_mlp.png"
+            visualize_limited_predictions =  "scatter_test_mlp.png"
+
 
 
         # Créer une liste de tuples (actual, predicted)
@@ -314,7 +340,10 @@ def process_columns():
                             quantity=quantity_column, category=category_column,
                             customer_review=customer_review_column, 
                             competing_price=competing_price_column, mse=mse, 
-                           # actual_predicted=actual_predicted,
+                            visualize_predictions = visualize_predictions ,
+                            scatter_predictions_with_ideal = scatter_predictions_with_ideal,
+                            plot_error_distribution= plot_error_distribution ,
+                            visualize_limited_predictions = visualize_limited_predictions ,
                             training_time= formatted_training_time,
                             prediction_file =prediction_file, 
                             top_10_rows = top_10_rows)
@@ -417,6 +446,14 @@ def process_columns_comparaisson():
             print("Reinforcement Learning is enabled.")
             output_df, table, mse1, training_time1 = regression_linear_q_learning(X,Y)
             output_df2, table2, mse2, training_time2 = random_forest_q_learning(X,Y)
+            visualize_predictions = "prix_comparaison_LR_QL.png"
+            scatter_predictions_with_ideal = "scatter_comparaison_ideal_LR_QL.png"
+            plot_error_distribution = "histogram_erreurs_LR_QL.png"
+            visualize_limited_predictions =  "limite_comparaison_LR_QL.png"
+            visualize_predictions2 = "prix_comparaison_RF_QL.png"
+            scatter_predictions_with_ideal2 = "scatter_comparaison_ideal_RF_QL.png"
+            plot_error_distribution2 = "histogram_erreurs_RF_QL.png"
+            visualize_limited_predictions2 =  "limite_comparaison_RF_QL.png"
             if mse1 < mse2:
                 best_model = "Linear Regression + Q_Learning "
                 best_mse = mse1
@@ -425,22 +462,31 @@ def process_columns_comparaisson():
             else:
                 best_model = "Random Forest + Q_Learning"
                 best_mse = mse2
-                prediction_file = 'RF_QL.csv'
+                prediction_file2 = 'RF_QL.csv'
+               
         else:
             print("Reinforcement Learning is disabled.")
             model1, predictions1, mse1, y_test1,training_time1 = train_linear_regression_Gene(X, Y)
-            
             model2, predictions,mse2, y_test2,training_time2 = train_random_forest_Gene(X, Y)
+            visualize_predictions = "prix_comparaison_LR.png"
+            scatter_predictions_with_ideal = "scatter_comparaison_ideal_LR.png"
+            plot_error_distribution = "histogram_erreurs_LR.png"
+            visualize_limited_predictions =  "limite_comparaison_LR.png"
+            visualize_predictions2 = "prix_comparaison_RF.png"
+            scatter_predictions_with_ideal2 = "scatter_comparaison_ideal_RF.png"
+            plot_error_distribution2 = "histogram_erreurs_RF.png"
+            visualize_limited_predictions2 =  "limite_comparaison_RF.png"
             # Comparer les MSE
             if mse1 < mse2:
                 best_model = "Linear Regression"
                 best_mse = mse1
                 prediction_file = 'predicted_prices_Linear.csv'
-            
+
             else:
                 best_model = "Random Forest"
                 best_mse = mse2
                 prediction_file = 'predicted_prices_Forest.csv'
+                
         training_time = training_time1 + training_time2
         formatted_training_time = str(timedelta(seconds=int(training_time)))
         formatted_training_time1 = str(timedelta(seconds=int(training_time1)))
@@ -448,12 +494,21 @@ def process_columns_comparaisson():
         prediction_file_path = os.path.join('static', prediction_file)
         predicted_df = pd.read_csv(prediction_file_path)
         top_10_rows = predicted_df.head(10).to_html(classes="table table-striped", index=False)
+        #print( "visualize_predictions2 = ", visualize_predictions2)
         return render_template('compare_results.html', 
                                    best_model=best_model, 
                                    formatted_training_time1 = formatted_training_time1,
                                    formatted_training_time2 = formatted_training_time2,
                                    formatted_training_time = formatted_training_time,
                                    best_mse=best_mse , 
+                                   visualize_predictions = visualize_predictions ,
+                                   scatter_predictions_with_ideal = scatter_predictions_with_ideal,
+                                   plot_error_distribution= plot_error_distribution ,
+                                   visualize_limited_predictions = visualize_limited_predictions ,
+                                   visualize_predictions2 = visualize_predictions2 ,
+                                   scatter_predictions_with_ideal2 = scatter_predictions_with_ideal2,
+                                   plot_error_distribution2 = plot_error_distribution2 ,
+                                   visualize_limited_predictions2 = visualize_limited_predictions2 ,
                                    prediction_file=prediction_file, 
                                    top_10_rows=top_10_rows)    
 

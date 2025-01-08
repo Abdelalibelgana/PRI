@@ -100,11 +100,30 @@
         <p><strong>Customer Review Column (optional):</strong> {{ customer_review }}</p>
         <p><strong>Competing Price Column (optional):</strong> {{ competing_price }}</p>
     </div>
-
     <div class="results-box">
         <p><strong>MSE (Mean Squared Error):</strong> {{ mse }}</p>
         <p><strong>Training Time:</strong> {{ training_time }}</p>
         <a href="{{ url_for('static', filename=prediction_file) }}" class="download-button" download>Download the Results File</a>
+    </div>
+    <div class="result-box">
+        <h3>Prediction Visualizations</h3>
+        <div>
+            
+            <h4>Price Comparison</h4>
+            <img src="{{ url_for('static', filename=visualize_predictions) }}" alt="Price Comparison" width="80%">
+        </div>
+        <div>
+            <h4>Scatter Plot with Ideal Line</h4>
+            <img src="{{ url_for('static', filename= scatter_predictions_with_ideal) }}" alt="Scatter Plot with Ideal Line" width="80%">
+        </div>
+        <div>
+            <h4>Error Distribution</h4>
+            <img src="{{ url_for('static', filename= plot_error_distribution) }}" alt="Error Distribution" width="80%">
+        </div>
+        <div>
+            <h4>Limited Predictions Comparison</h4>
+            <img src="{{ url_for('static', filename= visualize_limited_predictions) }}" alt="Limited Predictions Comparison" width="80%">
+        </div>
     </div>
 
     <div class="result-box">

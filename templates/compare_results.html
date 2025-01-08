@@ -17,14 +17,35 @@
             margin-bottom: 20px;
         }
 
-        .results-box {
-            margin-top: 20px;
-            margin-bottom: 20px;
+        .result-box {
+            margin: 20px;
             padding: 20px;
             background-color: #f3f3f3;
             border-radius: 10px;
+            text-align: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
+        .image-row {
+            display: flex;
+            justify-content: space-around; /* Espace entre les images */
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .image-box {
+            flex: 1; /* Permet à chaque image de prendre un espace égal */
+            margin: 0 10px; /* Ajoute un espacement horizontal entre les images */
+            text-align: center;
+        }
+
+        .image-box img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
 
         .results-box p {
             font-size: 18px;
@@ -104,6 +125,51 @@
             <a href="{{ url_for('static', filename=prediction_file) }}" class="download-button" download>Download the Results File</a>
 
         </div>
+        
+        <div class="result-box">
+            <h3>Prediction Visualizations</h3>
+            <div class="image-row">
+                <div class="image-box">
+                    <h4>Price Comparison (LR)</h4>
+                    <img src="{{ url_for('static', filename=visualize_predictions) }}" alt="Price Comparison" width="100%">
+                </div>
+                <div class="image-box">
+                    <h4>Price Comparison (RF)</h4>
+                    <img src="{{ url_for('static', filename=visualize_predictions2) }}" alt="Scatter Plot with Ideal Line" width="100%">
+                </div>
+            </div>
+            <div class="image-row">
+                <div class="image-box">
+                    <h4>Scatter Plot with Ideal Line (LR)</h4>
+                    <img src="{{ url_for('static', filename=scatter_predictions_with_ideal) }}" alt="Price Comparison" width="100%">
+                </div>
+                <div class="image-box">
+                    <h4>Scatter Plot with Ideal Line (RF)</h4>
+                    <img src="{{ url_for('static', filename=scatter_predictions_with_ideal2) }}" alt="Scatter Plot with Ideal Line" width="100%">
+                </div>
+            </div>
+            <div class="image-row">
+                <div class="image-box">
+                    <h4>Error Distribution (LR)</h4>
+                    <img src="{{ url_for('static', filename=plot_error_distribution) }}" alt="Price Comparison" width="100%">
+                </div>
+                <div class="image-box">
+                    <h4>Error Distribution (RF)</h4>
+                    <img src="{{ url_for('static', filename=plot_error_distribution2) }}" alt="Scatter Plot with Ideal Line" width="100%">
+                </div>
+            </div>
+            <div class="image-row">
+                <div class="image-box">
+                    <h4>Limited Predictions Comparison (LR)</h4>
+                    <img src="{{ url_for('static', filename=visualize_limited_predictions) }}" alt="Error Distribution" width="100%">
+                </div>
+                <div class="image-box">
+                    <h4>Limited Predictions Comparison  (RF)</h4>
+                    <img src="{{ url_for('static', filename=visualize_limited_predictions2) }}" alt="Limited Predictions Comparison" width="100%">
+                </div>
+            </div>
+        </div>
+        
         <!-- Afficher les 10 premières lignes du fichier -->
         <div class="result-box">
             <h3>Top 10 rows from the predicted file:</h3>

@@ -5,6 +5,109 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 from datetime import datetime
+import matplotlib
+matplotlib.use('Agg')  # Backend non interactif pour éviter les erreurs GUI
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Utiliser un backend non interactif pour éviter les erreurs GUI
+import matplotlib.pyplot as plt
+
+def visualize_predictions(output_df, output_path, title="Prix Réels vs Prix Prédits for RF_QL"):
+    """
+    Sauvegarde un graphique comparant les prix réels et prédits.
+
+    Args:
+        output_df (pd.DataFrame): DataFrame contenant les colonnes 'Prix Actuel' et 'Prix Optimisé'.
+        output_path (str): Chemin du fichier de sortie.
+        title (str): Titre du graphique.
+    """
+    if 'Prix Actuel' not in output_df.columns or 'Prix Optimisé' not in output_df.columns:
+        raise ValueError("Les colonnes 'Prix Actuel' et 'Prix Optimisé' sont nécessaires dans le DataFrame.")
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(output_df.index, output_df['Prix Actuel'], label="Prix Réels", marker='o')
+    plt.plot(output_df.index, output_df['Prix Optimisé'], label="Prix Prédits", marker='x')
+    plt.title(title)
+    plt.xlabel("Index")
+    plt.ylabel("Prix")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(output_path)
+    plt.close()
+    print(f"Graphique sauvegardé : {output_path}")
+
+def scatter_predictions_with_ideal(output_df, output_path, title="Ensemble Entraînement - Réel vs Prédit"):
+    """
+    Trace un graphique de dispersion avec une ligne idéale.
+
+    Args:
+        output_df (pd.DataFrame): DataFrame contenant 'Prix Actuel' et 'Prix Optimisé'.
+        output_path (str): Chemin pour sauvegarder le graphique.
+        title (str): Titre du graphique.
+    """
+    if 'Prix Actuel' not in output_df.columns or 'Prix Optimisé' not in output_df.columns:
+        raise ValueError("Les colonnes 'Prix Actuel' et 'Prix Optimisé' sont nécessaires dans le DataFrame.")
+    
+    plt.figure(figsize=(8, 8))
+    plt.scatter(output_df['Prix Actuel'], output_df['Prix Optimisé'], alpha=0.7, color='green', label="Prédictions")
+    plt.plot(output_df['Prix Actuel'], output_df['Prix Actuel'], color='red', linestyle='--', label="Valeurs Réelles")
+    plt.title(title)
+    plt.xlabel("Valeurs Réelles")
+    plt.ylabel("Valeurs Prédites")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(output_path)
+    plt.close()
+    print(f"Graphique sauvegardé : {output_path}")
+
+def plot_error_distribution(output_df, output_path, title="Distribution des Erreurs for RF_QL"):
+    """
+    Trace un histogramme pour la distribution des écarts entre prix réels et prédits.
+
+    Args:
+        output_df (pd.DataFrame): DataFrame contenant 'Prix Actuel' et 'Prix Optimisé'.
+        output_path (str): Chemin pour sauvegarder le graphique.
+        title (str): Titre du graphique.
+    """
+    if 'Prix Actuel' not in output_df.columns or 'Prix Optimisé' not in output_df.columns:
+        raise ValueError("Les colonnes 'Prix Actuel' et 'Prix Optimisé' sont nécessaires dans le DataFrame.")
+    
+    erreurs = output_df['Prix Actuel'] - output_df['Prix Optimisé']
+    plt.figure(figsize=(10, 6))
+    plt.hist(erreurs, bins=50, alpha=0.7, color='orange', edgecolor='black')
+    plt.title(title)
+    plt.xlabel("Erreur (Prix Réel - Prix Prédit)")
+    plt.ylabel("Fréquence")
+    plt.grid(True)
+    plt.savefig(output_path)
+    plt.close()
+    print(f"Histogramme des erreurs sauvegardé : {output_path}")
+
+def visualize_limited_predictions(output_df, output_path, title="Prix Réels vs Prix Prédits (Limité) for RF_QL"):
+    """
+    Affiche les prix réels et prédits pour un sous-ensemble des données.
+
+    Args:
+        output_df (pd.DataFrame): DataFrame contenant 'Prix Actuel' et 'Prix Optimisé'.
+        output_path (str): Chemin pour sauvegarder le graphique.
+        title (str): Titre du graphique.
+    """
+    if 'Prix Actuel' not in output_df.columns or 'Prix Optimisé' not in output_df.columns:
+        raise ValueError("Les colonnes 'Prix Actuel' et 'Prix Optimisé' sont nécessaires dans le DataFrame.")
+    
+    subset_df = output_df.head(200)  # Limiter à 200 premières lignes
+    plt.figure(figsize=(10, 6))
+    plt.plot(subset_df.index, subset_df['Prix Actuel'], label="Prix Réels", marker='o')
+    plt.plot(subset_df.index, subset_df['Prix Optimisé'], label="Prix Prédits", marker='x')
+    plt.title(title)
+    plt.xlabel("Index")
+    plt.ylabel("Prix")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(output_path)
+    plt.close()
+    print(f"Graphique limité sauvegardé : {output_path}")
+
 
 def random_forest_q_learning(X, Y, alpha=0.5, beta=0.3, gamma=0.2, epochs=50):
     """
@@ -145,7 +248,7 @@ def random_forest_q_learning(X, Y, alpha=0.5, beta=0.3, gamma=0.2, epochs=50):
             csv_predictions.append({
                 'Produit': product_code,
                 'Prix Actuel': actual_price,
-                'Prix Prédit': pred_price,
+                'Prix Optimisé': pred_price,
             })
 
     # Calculer le temps d'exécution
@@ -157,6 +260,10 @@ def random_forest_q_learning(X, Y, alpha=0.5, beta=0.3, gamma=0.2, epochs=50):
     # Enregistrer les résultats dans un fichier CSV
     output_df = pd.DataFrame(csv_predictions)
     output_df.to_csv('static/RF_QL.csv', index=False)
+    visualize_predictions(output_df, output_path="static/prix_comparaison_RF_QL.png")
+    scatter_predictions_with_ideal(output_df, output_path="static/scatter_comparaison_ideal_RF_QL.png")
+    plot_error_distribution(output_df, output_path="static/histogram_erreurs_RF_QL.png")
+    visualize_limited_predictions(output_df, output_path="static/limite_comparaison_RF_QL.png")
 
     print(f"MSE global: {mse}")
     

@@ -216,6 +216,7 @@
                 <option value="random_forest">Random Forest</option>
                 <option value="LR_QL">Linear Regression + Q_Learning</option>
                 <option value="RF_QL">Random Forest + Q_Learning</option>
+                <option value="MLP">MLP</option>
             </select><br>
 
             <button type="submit">Submit Selection</button>
@@ -233,7 +234,45 @@
     <button class="back-button" onclick="window.location.href='/'">Back to Home</button>
     <button class="back-button" onclick="window.history.back()">Back</button>
     
-
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const modelSelect = document.querySelector("select[name='model']");
+            const quantity = document.querySelector("select[name='quantity']");
+            const category = document.querySelector("select[name='category']");
+            const customerReview = document.querySelector("select[name='customer_review']");
+    
+            const quantityLabel = document.querySelector("label[for='quantity']");
+            const categoryLabel = document.querySelector("label[for='category']");
+            const customerReviewLabel = document.querySelector("label[for='customer_review']");
+    
+            modelSelect.addEventListener("change", function() {
+                const selectedModel = modelSelect.value;
+    
+                if (selectedModel === "LR_QL" || selectedModel === "RF_QL") {
+                    // Set required attributes
+                    quantity.setAttribute("required", "true");
+                    category.setAttribute("required", "true");
+                    customerReview.setAttribute("required", "true");
+    
+                    // Update labels to show "Required"
+                    quantityLabel.textContent = "Quantity (Required):";
+                    categoryLabel.textContent = "Category (Required):";
+                    customerReviewLabel.textContent = "Customer Review (Required):";
+                } else {
+                    // Remove required attributes
+                    quantity.removeAttribute("required");
+                    category.removeAttribute("required");
+                    customerReview.removeAttribute("required");
+    
+                    // Update labels to show "Optional"
+                    quantityLabel.textContent = "Quantity (Optional):";
+                    categoryLabel.textContent = "Category (Optional):";
+                    customerReviewLabel.textContent = "Customer Review (Optional):";
+                }
+            });
+        });
+    </script>
+    
     <script>
         
         // Montrer le loader lorsque le formulaire est soumis
