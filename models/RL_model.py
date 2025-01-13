@@ -129,6 +129,7 @@ def train_q_learning(X, Y, alpha=0.5, beta=0.3, gamma=0.2, epochs=50):
 
     # Créer le DataFrame des résultats
     output_df = pd.DataFrame(output_data)
+    output_df.to_csv('static/RL.csv', index=False)
 
     # Temps d'exécution
     execution_time = time.time() - start_time

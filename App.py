@@ -280,9 +280,10 @@ def process_columns():
         #print(X.head(3))
         # Définir Y avant le nettoyage
         Y = df_cleaned[prix_column]
-
+        visualisation = 0
         # Entraîner le modèle en fonction du choix
         if model_choice == "linear_regression":
+            visualisation = 1
             model, predictions, mse, y_test,training_time = train_linear_regression_Gene(X, Y)
             prediction_file = 'predicted_prices_Linear.csv'
             model_CH = "Linear Regression"
@@ -291,6 +292,7 @@ def process_columns():
             plot_error_distribution = "histogram_erreurs_LR.png"
             visualize_limited_predictions =  "limite_comparaison_LR.png"
         elif model_choice == "random_forest":
+            visualisation = 1
             model, predictions,mse, y_test,training_time = train_random_forest_Gene(X, Y)
             prediction_file = 'predicted_prices_Forest.csv'
             model_CH = "Random Forest"
@@ -299,6 +301,7 @@ def process_columns():
             plot_error_distribution = "histogram_erreurs_RF.png"
             visualize_limited_predictions =  "limite_comparaison_RF.png"
         elif model_choice == "LR_QL": 
+            visualisation = 1
             output_df, table, mse, training_time = regression_linear_q_learning(X,Y)
             prediction_file = 'LR_QL.csv'
             model_CH = "Linear Regression + Q_Learning"
@@ -307,6 +310,7 @@ def process_columns():
             plot_error_distribution = "histogram_erreurs_LR_QL.png"
             visualize_limited_predictions =  "limite_comparaison_LR_QL.png"
         elif model_choice == "RF_QL": 
+            visualisation = 1
             output_df, table, mse, training_time = random_forest_q_learning(X,Y)
             prediction_file = 'RF_QL.csv'
             model_CH = "Random Forest + Q_Learning"
@@ -315,6 +319,7 @@ def process_columns():
             plot_error_distribution = "histogram_erreurs_RF_QL.png"
             visualize_limited_predictions =  "limite_comparaison_RF_QL.png"
         elif model_choice == "MLP": 
+            visualisation = 1
             output_df, table, mse, training_time = mlp_model_q_learning(X,Y)
             prediction_file = 'MLP.csv'
             model_CH = "MLP"
@@ -322,6 +327,13 @@ def process_columns():
             scatter_predictions_with_ideal = "scatter_train_mlp.png"
             plot_error_distribution = "scatter_validation_mlp.png"
             visualize_limited_predictions =  "scatter_test_mlp.png"
+
+        elif model_choice == "RL": 
+            output_df, table, training_time = train_q_learning(X,Y)
+            mse = 0
+            prediction_file = 'RL.csv'
+            model_CH = "RL"
+           
 
 
 
@@ -334,20 +346,31 @@ def process_columns():
         predicted_df = pd.read_csv(prediction_file_path)
         top_10_rows = predicted_df.head(10).to_html(classes="table table-striped", index=False)
         # Après l'entraînement, rediriger ou afficher une page de résultats
-        return render_template('view_data_result.html', model=model_CH, 
-                            prix=prix_column, date=date_column, 
-                            product_name=product_name_column,
-                            quantity=quantity_column, category=category_column,
-                            customer_review=customer_review_column, 
-                            competing_price=competing_price_column, mse=mse, 
-                            visualize_predictions = visualize_predictions ,
-                            scatter_predictions_with_ideal = scatter_predictions_with_ideal,
-                            plot_error_distribution= plot_error_distribution ,
-                            visualize_limited_predictions = visualize_limited_predictions ,
-                            training_time= formatted_training_time,
-                            prediction_file =prediction_file, 
-                            top_10_rows = top_10_rows)
-    
+        if (visualisation == 1) : 
+            return render_template('view_data_result.html', model=model_CH, 
+                                prix=prix_column, date=date_column, 
+                                product_name=product_name_column,
+                                quantity=quantity_column, category=category_column,
+                                customer_review=customer_review_column, 
+                                competing_price=competing_price_column, mse=mse, 
+                                visualize_predictions = visualize_predictions ,
+                                scatter_predictions_with_ideal = scatter_predictions_with_ideal,
+                                plot_error_distribution= plot_error_distribution ,
+                                visualize_limited_predictions = visualize_limited_predictions ,
+                                training_time= formatted_training_time,
+                                prediction_file =prediction_file, 
+                                top_10_rows = top_10_rows)
+        else : 
+            return render_template('view_data.html', model=model_CH, 
+                                prix=prix_column, date=date_column, 
+                                product_name=product_name_column,
+                                quantity=quantity_column, category=category_column,
+                                customer_review=customer_review_column, 
+                                competing_price=competing_price_column, mse=mse, 
+                                training_time= formatted_training_time,
+                                prediction_file =prediction_file, 
+                                top_10_rows = top_10_rows)
+
     uploaded_file_path = request.args.get('file_path')
     #print("Path of the uploaded file:", uploaded_file_path)
 
