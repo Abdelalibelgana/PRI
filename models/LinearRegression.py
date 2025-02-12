@@ -10,6 +10,8 @@ from datetime import datetime
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error, r2_score
+
 
 def visualize_limited_predictions(output_df, output_path, title="Prix Réels vs Prédits (Limité) for LR"):
     """
@@ -141,7 +143,7 @@ def train_linear_regression_Gene(X, Y):
 
         # Ajoutez cette ligne pour travailler sur une copie explicite :
         X_prod = product_data[['Date', 'Price', 'Product']].copy()
-
+        
         # Vérification et ajout des colonnes si elles existent
         if 'Quantity' in product_data.columns and product_data['Quantity'].notna().any():
             X_prod.loc[:, 'Quantity'] = product_data['Quantity']
@@ -174,7 +176,7 @@ def train_linear_regression_Gene(X, Y):
                 y_train = y_prod.iloc[:split_index]
                 X_test = X_prod.iloc[split_index:]
                 y_test = y_prod.iloc[split_index:]
-
+            
             # Normaliser les données uniquement pour les colonnes numériques
             scaler = StandardScaler()
             X_train_scaled = scaler.fit_transform(X_train[numeric_columns])
@@ -185,6 +187,7 @@ def train_linear_regression_Gene(X, Y):
 
             # Prédire les prix pour les données de test
             predicted_prices = model.predict(X_test_scaled)
+            predicted_prices = np.maximum(predicted_prices, 0)
 
             # Stocker les prédictions et les valeurs réelles pour le calcul du MSE
             predicted_values.extend(predicted_prices)
@@ -222,9 +225,16 @@ def train_linear_regression_Gene(X, Y):
 
     # Calculer le temps d'entraînement
     training_time = time.time() - start_time
-    # Calculer le MSE global
+    # Calculer les métriques globales
     mse = mean_squared_error(true_values, predicted_values)
+    mae = mean_absolute_error(true_values, predicted_values)
+    r2 = r2_score(true_values, predicted_values)
+
+    # Afficher les métriques
     print(f"Mean Squared Error (MSE) global: {mse}")
+    print(f"Mean Absolute Error (MAE) global: {mae}")
+    print(f"Coefficient de Détermination (R^2) global: {r2}")
+
 
     # Sauvegarder les prédictions dans un fichier CSV
     predicted_data = pd.DataFrame(csv_predictions)
@@ -236,5 +246,6 @@ def train_linear_regression_Gene(X, Y):
     scatter_predictions_with_ideal( predicted_data, "static/scatter_comparaison_ideal_LR.png" )
     plot_error_distribution(predicted_data, "static/histogram_erreurs_LR.png")
     visualize_limited_predictions( predicted_data, "static/limite_comparaison_LR.png" )
+    return model, predicted_values, mse, mae, r2, true_values, training_time
 
-    return model, predicted_values, mse, true_values,training_time
+    #return model, predicted_values, mse, true_values,training_time

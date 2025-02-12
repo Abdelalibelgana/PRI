@@ -119,11 +119,22 @@
         <div class="result-box">
             <h3>Best Model: {{ best_model }}</h3>
             <p><strong>Mean Squared Error (MSE):</strong> {{ best_mse }}</p>
+            <p><strong>Mean Absolute Error (MAE)</strong> {{  best_mae }}</p>
+            <p><strong>Coefficient de Détermination (r2):</strong> {{  best_r2 }}</p>
             <p><strong>Training Time for Linear Regression:</strong> {{ formatted_training_time1 }} </p> 
             <p><strong>Training Time for Randum Forest:</strong> {{ formatted_training_time2 }} </p> 
+            <p><strong>Training Time for MLP:</strong> {{ formatted_training_time3 }} </p>
             <p><strong>Training Time:</strong> {{ formatted_training_time }} </p>    
             <a href="{{ url_for('static', filename=prediction_file) }}" class="download-button" download>Download the Results File</a>
 
+        </div>
+        <div class="result-box">
+            <h3>Comparison of Metrics</h3>
+            <div>
+                <h4>Metrics Table</h4>
+                <!-- Afficher le tableau généré -->
+                {{ metrics_table|safe }}
+            </div>
         </div>
         
         <div class="result-box">

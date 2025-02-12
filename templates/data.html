@@ -216,8 +216,10 @@
                 <option value="random_forest">Random Forest</option>
                 <option value="LR_QL">Linear Regression + Q_Learning</option>
                 <option value="RF_QL">Random Forest + Q_Learning</option>
+                <option value="RF_QL_test">Random Forest included in Q_Learning </option>
+                <option value="LR_Q_test">Linear Regression included in Q_Learning</option>
                 <option value="MLP">MLP</option>
-                <option value="RL">RL</option>
+                <option value="RL">Q_Learning</option>
             </select><br>
 
             <button type="submit">Submit Selection</button>
@@ -296,11 +298,24 @@
     
         // Timer pour le compteur
         let timerInterval;
+
         function startTimer() {
             let seconds = 0;
             timerInterval = setInterval(function () {
                 seconds++;
-                document.getElementById("timer").innerText = `Elapsed time: ${seconds} second(s)`;
+
+                // Calcul des heures, minutes et secondes
+                let hrs = Math.floor(seconds / 3600);
+                let mins = Math.floor((seconds % 3600) / 60);
+                let secs = seconds % 60;
+
+                // Formatage pour avoir toujours deux chiffres (ex: 01:05:09)
+                let formattedTime = 
+                    String(hrs).padStart(2, '0') + " : " +
+                    String(mins).padStart(2, '0') + " : " +
+                    String(secs).padStart(2, '0');
+
+                document.getElementById("timer").innerText = `Elapsed time : ${formattedTime}`;
             }, 1000); // Mettre à jour chaque seconde
         }
     

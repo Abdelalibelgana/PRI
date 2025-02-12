@@ -10,6 +10,8 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error, r2_score
+
 
 def visualize_limited_predictions(output_df, output_path, title="Prix Réels vs Prédits (Limité) for RF"):
     """
@@ -204,7 +206,7 @@ def train_random_forest_Gene(X, Y):
             X_test_scaled = scaler.transform(X_test[numeric_columns])  # Assurez-vous que 'numeric_columns' est bien défini
 
             # Créer le modèle Random Forest
-            model = RandomForestRegressor(n_estimators=300, random_state=42)
+            model = RandomForestRegressor(n_estimators=1000, random_state=42)
             model.fit(X_train_scaled, y_train)
 
             # Faire des prédictions
@@ -231,9 +233,16 @@ def train_random_forest_Gene(X, Y):
     
     # Calculer le temps d'entraînement
     training_time = time.time() - start_time
-    # Calculer le MSE global
+    
+     # Calculer les métriques globales
     mse = mean_squared_error(true_values, predicted_values)
+    mae = mean_absolute_error(true_values, predicted_values)
+    r2 = r2_score(true_values, predicted_values)
+
+    # Afficher les métriques
     print(f"Mean Squared Error (MSE) global: {mse}")
+    print(f"Mean Absolute Error (MAE) global: {mae}")
+    print(f"Coefficient de Détermination (R^2) global: {r2}")
 
     # Enregistrer les prédictions dans un fichier CSV
     predicted_data = pd.DataFrame(csv_predictions)
@@ -245,4 +254,4 @@ def train_random_forest_Gene(X, Y):
     plot_error_distribution(predicted_data, "static/histogram_erreurs_RF.png")
     visualize_limited_predictions( predicted_data, "static/limite_comparaison_RF.png" )
 
-    return model, predicted_values, mse, true_values, training_time
+    return model, predicted_values, mse, mae, r2, true_values, training_time

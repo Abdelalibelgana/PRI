@@ -11,6 +11,8 @@ from sklearn.metrics import mean_squared_error
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_absolute_error, r2_score
+from datetime import datetime
 
 def plot_training(history, output_path_loss, output_path_mae):
     """
@@ -65,9 +67,11 @@ def scatter_plot(actual, predicted, output_path, title, color='blue'):
     print(f"Graphique de dispersion sauvegardé : {output_path}")
 
 
-def mlp_model_q_learning(X, Y):
+
+
+def mlp_model(X, Y):
     """
-    Implémente un modèle MLP combiné avec Q-Learning pour prédire les prix des produits.
+    Implémente un modèle MLP pour prédire les prix des produits.
 
     Paramètres :
         X : pandas.DataFrame - Les caractéristiques d'entrée (y compris les dates si disponibles).
@@ -75,12 +79,10 @@ def mlp_model_q_learning(X, Y):
 
     Retourne :
         results : pandas.DataFrame - Les prédictions du modèle.
-        q_table : dict - La table Q utilisée pour l'apprentissage par renforcement.
         execution_time : float - Temps d'exécution du modèle.
         history : History object - Historique de l'entraînement.
         Y_train, Y_train_pred, Y_val, Y_val_pred, Y_test, Y_test_pred : array-like - Données et prédictions.
     """
-    from datetime import datetime
 
     # Mesurer le temps d'exécution
     start_time = time.time()
@@ -144,32 +146,27 @@ def mlp_model_q_learning(X, Y):
     Y_val_pred = model.predict(X_val)
     Y_test_pred = model.predict(X_test)
 
-    # Calcul de la MSE
+    # Calculer les métriques globales
     mse = mean_squared_error(Y_test, Y_test_pred)
-    print(f"Mean Squared Error (MSE): {mse}")
+    mae = mean_absolute_error(Y_test, Y_test_pred)
+    r2 = r2_score(Y_test, Y_test_pred)
 
-    # Simuler une table Q (fictive pour ce modèle)
-    q_table = {}
-    for i in range(len(X_test)):
-        state = tuple(X_test[i])  # Représentation de l'état
-        action = Y_test_pred[i]  # Action prédite
-        q_table[state] = action
+    # Afficher les métriques
+    print(f"Mean Squared Error (MSE): {mse}")
+    print(f"Mean Absolute Error (MAE): {mae}")
+    print(f"R^2 Score: {r2}")
 
     # Temps d'exécution
     execution_time = time.time() - start_time
 
-    #date_str = datetime.now().strftime('%Y-%m-%d')
     # Résultats avec les dates ajoutées
     results = pd.DataFrame({
         'Date': dates_test.values,  # Ajouter les dates associées
         'Actual': Y_test.values,
-        #'Predection date ' : date_str,
         'Predicted': Y_test_pred.flatten()
     })
 
-    
     results_file = f'static/MLP.csv'
-
     results.to_csv(results_file, index=False)
     print(f"Fichier des prédictions sauvegardé : {results_file}")
 
@@ -182,5 +179,4 @@ def mlp_model_q_learning(X, Y):
 
     scatter_plot(Y_test, Y_test_pred, output_path='static/scatter_test_mlp.png', title='Ensemble Test - Réel vs Prédit', color='purple')
 
-    return results, q_table, mse, execution_time
-
+    return results, mse, mae, r2, execution_time
